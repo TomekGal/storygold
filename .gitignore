@@ -1,0 +1,30 @@
+
+@'
+# Python
+__pycache__/
+*.pyc
+.vscode/
+
+# SolidWorks lock files
+~$*.SLDPRT
+~$*.sldprt
+~$*.SLDASM
+~$*.sldasm
+
+# Duże assety CAD -- ściągane osobno (nie żyją w git)
+*.SLDPRT
+*.sldprt
+*.STL
+*.stl
+*.png
+
+# Wygenerowane wyniki i kopie zapasowe
+results/
+*.json.bak
+
+# Windows
+Thumbs.db
+Desktop.ini
+'@ | Out-File -Encoding utf8 .gitignore
+# Wyj�tek: chcemy mie� solutionTG w repo
+!1_paystation_controller/solution/solutionTG.SLDPRT

@@ -1,0 +1,213 @@
+schema_version = "1.4"
+
+[task]
+name = "storygold/solidworks-0001-playstation-controller"
+version = "1.0.0"
+description = "Make design edits while preserving design intent and feature tree references"
+keywords = ["solidworks", "cad", "design_iteration"]
+
+[[task.authors]]
+name = "StoryGold"
+
+[metadata]
+complete = true
+program = "SolidWorks"
+category = "design_iteration"
+units = "mm"
+human_baseline_minutes = 240
+max_score = 4
+
+notes = "PS3 controller (replaces the retired Xbox variant, whose surfacing broke during the engineer's edit). Mirror plane is x=80.5mm, not x=0. Grading is geometry-only and id/name-independent: roles (housing/dpad/face_buttons/ sticks/triggers/bumpers/centre) are assigned geometrically per capture. Widen is graded as mirror-pair separation growth (+15mm), robust to the housing remodel. The naive-flip guard is the port-light glyph cluster (a one-sided housing feature re-found by its mirror-invariant area multiset; it must stay on its original side). PS symbol glyphs are left-right symmetric, so symbol chirality is UNVERIFIABLE by design. Harness grades the active SolidWorks document, or a path passed as argv[1]. Baseline frozen via `harness.py --capture-baseline prompt/input.SLDPRT`.\n"
+output_modality = "cad"
+accepted_output_formats = ["sldprt"]
+reference = ["solution/solution.SLDPRT"]
+
+[metadata.harness]
+entrypoint = "harness/harness.py"
+timeout_s = 300.0
+requires_solidworks = true
+requires_freecad = false
+requires_llm = false
+
+[[metadata.inputs]]
+path = "environment/input.SLDPRT"
+format = "sldprt"
+role = "primary"
+
+[[metadata.inputs]]
+path = "tests/task/prompt/input.json"
+format = "json"
+role = "baseline_measurements"
+
+[metadata.examples]
+"examples/adversarial_widened_15mm_clusters_at_original_spacing/adversarial_widened_15mm_clusters_at_original_spacing.SLDPRT" = "widened 15 mm but clusters left at original spacing"
+"examples/adversarial_unwidened_shell_with_correct_clusters/adversarial_unwidened_shell_with_correct_clusters.SLDPRT" = "clusters swapped correctly on an unwidened shell"
+"examples/adversarial_widened_by_30mm/adversarial_widened_by_30mm.SLDPRT" = "widened 30 mm instead of 15"
+"examples/adversarial_text_mirrored_incorrectly/adversarial_text_mirrored_incorrectly.SLDPRT" = "text mirrored incorrectly"
+"examples/adversarial_only_one_button_cluster_mirrored/adversarial_only_one_button_cluster_mirrored.SLDPRT" = "only one button cluster moved across"
+"examples/adversarial_missing_glyphs/adversarial_missing_glyphs.SLDPRT" = "widened and mirrored correctly but the button glyphs are missing"
+"examples/adversarial_unrequested_change_elsewhere/adversarial_unrequested_change_elsewhere.SLDPRT" = "correct edit plus an unrequested change elsewhere on the part"
+"examples/adversarial_feature_tree_with_errors/adversarial_feature_tree_with_errors.SLDPRT" = "feature tree riddled with rebuild errors and dangling references"
+
+[[metadata.assets]]
+path = "environment/input.SLDPRT"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/environment/input.SLDPRT"
+sha256 = "cfb3c18638106b302f106a1429759445330757f6e055e0c47a31a7a7a3e51192"
+bytes = 11588163
+
+[[metadata.assets]]
+path = "environment/input.png"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/environment/input.png"
+sha256 = "f8725fcfbc7967cda3728f85a07fa316c2f49da894356bc7c543e712e38dbcc1"
+bytes = 259686
+
+[[metadata.assets]]
+path = "environment/input.STL"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/environment/input.STL"
+sha256 = "89f40c632b65ad350d316a221b3c28d7bc5aa8cb4891a8b150bdc5fc3e16c593"
+bytes = 2079734
+
+[[metadata.assets]]
+path = "solution/solution.SLDPRT"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/solution/solution.SLDPRT"
+sha256 = "48b56be8fd3a505aaae13d987316868eb1770b369eb19611f2a9e6ddbc6ef682"
+bytes = 25500615
+
+[[metadata.assets]]
+path = "solution/solution.png"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/solution/solution.png"
+sha256 = "258e631c61db62976343e1c37dcc62fcc730b96d06b5d403c02e68d660700aea"
+bytes = 283421
+
+[[metadata.assets]]
+path = "solution/solution.STL"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/solution/solution.STL"
+sha256 = "f69d0f234d9f0079391195ec12ecbed416b7c77302a537fcc54c52abde701629"
+bytes = 4010284
+
+[[metadata.assets]]
+path = "examples/adversarial_feature_tree_with_errors"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/examples/adversarial_feature_tree_with_errors"
+sha256 = "e2acda5730da11ad43dc219ac82cb25d22fe6b491c159d624d04b58c1671f0be"
+bytes = 44056962
+files = 3
+manifest = [
+  ["adversarial_feature_tree_with_errors.SLDPRT", "9ae45d3063efa048e8761cb3f3de56b2fa70af83964a87d39814f9977e353dfe", 40031068],
+  ["adversarial_feature_tree_with_errors.STL", "1b932ef6c669aa5492ca8d4fd5a98074e2414a7fc983d08c3fd52cf7cc0885fd", 3751184],
+  ["adversarial_feature_tree_with_errors.png", "4f12f83de2bd5890b268c61f1d0a5f821e354f8c9e3c39f0037090d4b6d5d211", 274710],
+]
+
+[[metadata.assets]]
+path = "examples/adversarial_missing_glyphs"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/examples/adversarial_missing_glyphs"
+sha256 = "d782e985cba9b0a48afb3d8fd0f7236bc2a008276ab0e1f9bfe53ae3865c0cb1"
+bytes = 29355162
+files = 3
+manifest = [
+  ["adversarial_missing_glyphs.SLDPRT", "c6e54e3a7832d99ac0edbab8aaae5133c6de682e8ec0df00f8e319d87d02721c", 25061457],
+  ["adversarial_missing_glyphs.STL", "f69d0f234d9f0079391195ec12ecbed416b7c77302a537fcc54c52abde701629", 4010284],
+  ["adversarial_missing_glyphs.png", "258e631c61db62976343e1c37dcc62fcc730b96d06b5d403c02e68d660700aea", 283421],
+]
+
+[[metadata.assets]]
+path = "examples/adversarial_only_one_button_cluster_mirrored"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/examples/adversarial_only_one_button_cluster_mirrored"
+sha256 = "e2ac462ef897f83c1993e4401a1a82d606bfa022162c87b69434c9856eff8b17"
+bytes = 27860108
+files = 3
+manifest = [
+  ["adversarial_only_one_button_cluster_mirrored.SLDPRT", "54f6952da5ef87cdb7fddabfbed33ae5f83ad5f9d3af29e382d246dc025f3c3c", 23534759],
+  ["adversarial_only_one_button_cluster_mirrored.STL", "b1994e8ed92977d9908975c456b90e97a1f00459958aafc5733a2f11a35af773", 4043084],
+  ["adversarial_only_one_button_cluster_mirrored.png", "26ed7da7f0505449a3f6d140df8fc2308c3e768d329aedb9433b463c4777287a", 282265],
+]
+
+[[metadata.assets]]
+path = "examples/adversarial_text_mirrored_incorrectly"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/examples/adversarial_text_mirrored_incorrectly"
+sha256 = "2ab0b496eca3d08dec72269dd5feef5b08b77cbdc7c7e23dcf347a728db70002"
+bytes = 28591239
+files = 3
+manifest = [
+  ["adversarial_text_mirrored_incorrectly.SLDPRT", "db327196258f3dc53092f1e27c4b83ea79890bfddd1ff29744623673b8aaac5a", 24296884],
+  ["adversarial_text_mirrored_incorrectly.STL", "300aded438c569048264d56d105dd438bcdebb6b09d48c41b7c2e4a74134a987", 4009784],
+  ["adversarial_text_mirrored_incorrectly.png", "bf1ee269b45eb2138beafebe900f1b529a6d0f3a3a26776fccd148ea31183195", 284571],
+]
+
+[[metadata.assets]]
+path = "examples/adversarial_unwidened_shell_with_correct_clusters"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/examples/adversarial_unwidened_shell_with_correct_clusters"
+sha256 = "7967940ab484b3a3d69f0d182c4e251b490e3c7addf67aa086cfd640ec1c015a"
+bytes = 24585324
+files = 3
+manifest = [
+  ["adversarial_unwidened_shell_with_correct_clusters.SLDPRT", "9bcc77111785c051283fe69f8c5f94ed3379fc35627128efb24bd34c08e67484", 20764492],
+  ["adversarial_unwidened_shell_with_correct_clusters.STL", "effe8d4bc8cb6d1def74d1fd14f26cf4276dab62d0c5cb0e096da810bb65b004", 3545984],
+  ["adversarial_unwidened_shell_with_correct_clusters.png", "7e854b6fc83fdf5c922eb967f5d88949cabc907b4a8bb9751fcfed9c1d83ab3f", 274848],
+]
+
+[[metadata.assets]]
+path = "examples/adversarial_widened_15mm_clusters_at_original_spacing"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/examples/adversarial_widened_15mm_clusters_at_original_spacing"
+sha256 = "c495dca4dddfb5608784b5d42f55bdcb43052325382803c82662aa269a811943"
+bytes = 14293170
+files = 3
+manifest = [
+  ["adversarial_widened_15mm_clusters_at_original_spacing.SLDPRT", "8c22247f0663db308031d4498dcbeb6742238785ef046102fe467de881a80151", 12022558],
+  ["adversarial_widened_15mm_clusters_at_original_spacing.STL", "ab8987d89f4796ee72fa997e98fa1b34735ef174579ec3e5443d12b27777e154", 2014534],
+  ["adversarial_widened_15mm_clusters_at_original_spacing.png", "876a8f32d6413b63fb52e02f9dc1a93d35255b074773df3e515a6581a0d94feb", 256078],
+]
+
+[[metadata.assets]]
+path = "examples/adversarial_widened_by_30mm"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/examples/adversarial_widened_by_30mm"
+sha256 = "278fb71c5507610e3805c3cb9380dfd09196df9c830d717a07418ad341b4d236"
+bytes = 38456791
+files = 3
+manifest = [
+  ["adversarial_widened_by_30mm.SLDPRT", "27533cf1aebb6cbec19db5b98877b295b42014a537845c5ab1f07106d83a1c15", 34215470],
+  ["adversarial_widened_by_30mm.STL", "f4850bdca6cb0658b516556587a2eb7340f677c7594e44c2d77a64caf4219886", 3960284],
+  ["adversarial_widened_by_30mm.png", "92600057f42880a10324ea1242a96e4d6066464bb9fd2a3118399bfa50956161", 281037],
+]
+
+[[metadata.assets]]
+path = "examples/adversarial_unrequested_change_elsewhere"
+url = "https://openaievalsetub0ktk.blob.core.windows.net/assets/SolidWorks/1_playstation_controller/examples/adversarial_unrequested_change_elsewhere"
+sha256 = "4fe977c40aadb3544b6e765a1ca203afefa3be90192c689386ce651c711c2bac"
+bytes = 25439543
+files = 2
+manifest = [
+  ["adversarial_unrequested_change_elsewhere.SLDPRT", "0c407b0e4f4c071f99dc96a1ca78d177a319952968850e9a62f4291bc1e51fcc", 25055163],
+  ["adversarial_unrequested_change_elsewhere.png", "30d45d981c9e75eee1d32a694b2a5cf37ab15337733be14faaadef9658b471c9", 384380],
+]
+
+[verifier]
+# TODO: verifier.environment_mode -- the harness grades whatever SolidWorks
+# document is currently open via COM (pywin32), not a file handed to a
+# headless verifier process. Decide once the real Windows+SolidWorks
+# environment exists whether verification runs "shared" with the agent's
+# live SolidWorks session or some other arrangement Harbor doesn't
+# currently model for GUI apps.
+timeout_sec = 1200.0
+
+[verifier.env]
+
+[agent]
+timeout_sec = 1200.0
+# TODO: user -- which Windows user account the agent (and SolidWorks) run
+# as. Depends on how SolidWorks licensing/activation is set up on the
+# target machine.
+
+[environment]
+os = "windows"
+network_mode = "public"
+build_timeout_sec = 1200.0
+# TODO: cpus / memory / storage -- SolidWorks' real resource needs on the
+# target Windows host aren't known from here.
+
+[environment.env]
+# TODO: FREECAD-style env var isn't applicable; SolidWorks is driven via
+# COM (win32com.client.Dispatch("SldWorks.Application")), which needs a
+# running, licensed SolidWorks process -- not an env var pointing at a
+# binary.
+
+[solution.env]

@@ -15,7 +15,7 @@ program = "SolidWorks"
 category = "design_iteration"
 units = "mm"
 human_baseline_minutes = 240
-max_score = 4
+max_score = 5
 
 notes = "PS3 controller (replaces the retired Xbox variant, whose surfacing broke during the engineer's edit). Mirror plane is x=80.5mm, not x=0. Grading is geometry-only and id/name-independent: roles (housing/dpad/face_buttons/ sticks/triggers/bumpers/centre) are assigned geometrically per capture. Widen is graded as mirror-pair separation growth (+15mm), robust to the housing remodel. The naive-flip guard is the port-light glyph cluster (a one-sided housing feature re-found by its mirror-invariant area multiset; it must stay on its original side). PS symbol glyphs are left-right symmetric, so symbol chirality is UNVERIFIABLE by design. Harness grades the active SolidWorks document, or a path passed as argv[1]. Baseline frozen via `harness.py --capture-baseline prompt/input.SLDPRT`.\n"
 output_modality = "cad"

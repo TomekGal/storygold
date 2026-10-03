@@ -63,6 +63,11 @@ TOL = {
     "sig_floor_frac": 0.2,       # candidate |moment3| must be >= this frac of
                                  # the baseline's to count as a valid witness
     "intf_growth_m3": 5e-9,      # 5 mm^3 of new control interference allowed
+    "button_glyph_decrease": 3,  # small-face-count drop on dpad/face_buttons
+                                 # bodies allowed before losing points --
+                                 # small headroom for measurement noise;
+                                 # increases (remodel) are never penalised,
+                                 # only decreases (missing engraved detail)
 }
 
 # Continuous scoring (README requirement): each scored component maps its
@@ -80,6 +85,11 @@ ZERO_AT = {
     "cluster_pos_m": 0.020,                   # cluster nowhere near its
                                                # expected mirrored position
     "intf_growth_m3": 1e-6,                   # ~1mm^3 of real interference
+    "button_glyph_decrease": 15,               # calibrated below the -24
+                                               # drop observed on
+                                               # adversarial_missing_glyphs,
+                                               # well above the 0/+18 range
+                                               # seen on known-good solutions
 }
 
 MIRROR_ROLES = ["dpad", "face_buttons", "sticks", "triggers", "bumpers",
@@ -670,9 +680,43 @@ class Grader:
                             "to housing remodel; global bbox is NOT used"}
 
     # -- c2 ------------------------------------------------------------
+    def _measured_half_m(self):
+        """Average measured half-width growth from sticks/triggers/bumpers
+        mirror-pair separation -- what the candidate ACTUALLY achieved,
+        not the fixed 15mm target. Used to grade cluster POSITION (c2)
+        against the candidate's own achieved stance, per instruction.md's
+        "re-space the button clusters to match the wider stance" (match
+        THEIR stance, not a hardcoded number). Whether that stance is
+        itself 15mm is c1_width's job, graded independently -- without
+        this, a candidate that correctly re-spaced clusters to match its
+        own (wrong) width got double-penalised: once on c1_width for the
+        wrong width, and again on c2_spacing for clusters not matching a
+        width they were never supposed to match in the first place.
+        Confirmed on adversarial_widened_by_30mm: clusters scored 0.31
+        instead of a clean 1.0 purely because of this coupling, despite
+        task.toml describing that example as a width-only defect. Falls
+        back to POLICY['half_m'] only when no pair is measurable at all
+        (e.g. role assignment failed entirely)."""
+        deltas = []
+        for role in ("sticks", "triggers", "bumpers"):
+            bids = self.Broles.get(role, [])
+            if len(bids) != 2:
+                continue
+            cs = [self.match[b]["cand"] for b in bids]
+            if None in cs:
+                continue
+            seed = abs(self.B[bids[0]]["centroid_m"][0]
+                       - self.B[bids[1]]["centroid_m"][0])
+            got = abs(self.C[cs[0]]["centroid_m"][0]
+                      - self.C[cs[1]]["centroid_m"][0])
+            deltas.append(got - seed)
+        if not deltas:
+            return POLICY["half_m"]
+        return (sum(deltas) / len(deltas)) / 2.0
+
     def c2_spacing(self):
         fails, det = [], {}
-        half = POLICY["half_m"]
+        half = self._measured_half_m()
         scored = []  # (error_m, perfect_tol, zero_at) across both checks
         for role in RIGID_ROLES:
             bids = self.Broles.get(role, [])
@@ -884,7 +928,9 @@ class Grader:
                     "symmetric split-faces; a mirror is geometrically "
                     "undetectable on the symbols themselves.  Handedness is "
                     "graded from cluster sides, body inertia signs and the "
-                    "housing side signature instead.",
+                    "housing side signature instead. Their mere PRESENCE "
+                    "(not their chirality) is graded separately -- see the "
+                    "'glyph presence' criterion.",
         }
 
         # continuous score: weighted average of the four witnesses, each
@@ -915,6 +961,66 @@ class Grader:
 
         return {"status": PASS if not fails else FAIL, "score": score,
                 "failures": fails, "checks": checks}
+
+    # -- c6 ------------------------------------------------------------
+    def c6_glyphs(self):
+        """Small-face count on dpad/face_buttons bodies, baseline vs
+        candidate -- only DECREASES are penalised (missing engraved
+        detail, e.g. a deleted symbol cutout); increases are never
+        penalised, since remodelling can legitimately add small faces
+        (fillets, split surfaces) without removing any glyphs.
+
+        This targets dpad/face_buttons specifically rather than the whole
+        housing: unlike the housing (which legitimately varies wildly in
+        small-face count between equally-correct solutions that re-shell it
+        differently -- confirmed empirically: two known-good references
+        differed by 227 vs 21 small housing faces, swamping any real
+        signal), the button bodies are small, functional, standardised
+        parts that don't get remodelled nearly as aggressively -- the same
+        two references differed by only 0 and +18 small button faces,
+        while a candidate with genuinely deleted glyphs (symbol cutouts)
+        dropped by -24, a clean, well-separated signal.
+
+        Replaces the previous symbol_glyphs check in c4_handedness, which
+        was permanently UNVERIFIABLE (PS symbol faces are left-right
+        symmetric, so a mirror can't be read from them -- but their mere
+        PRESENCE can be checked here, independent of handedness)."""
+        cand_bodies = (self.Croles.get("dpad", [])
+                      + self.Croles.get("face_buttons", []))
+        if not cand_bodies:
+            # candidate-side diamond detection found nothing at all for
+            # dpad/face_buttons -- a role-assignment gap, not evidence of
+            # missing glyphs specifically. Other checks (c2/c4) silently
+            # skip roles with no matched bodies rather than failing on
+            # them; do the same here instead of scoring a hard 0.0 for the
+            # wrong reason.
+            return {"status": UNVERIFIABLE, "score": None,
+                    "note": "dpad/face_buttons role detection found no "
+                            "bodies on the candidate -- cannot verify "
+                            "glyph presence independently of that gap"}
+
+        b_total = sum(self.bl["small_face_counts"].get(i, 0)
+                      for role in ("dpad", "face_buttons")
+                      for i in self.Broles.get(role, []))
+        c_total = sum(self.ms["small_face_counts"].get(i, 0)
+                      for role in ("dpad", "face_buttons")
+                      for i in self.Croles.get(role, []))
+        decrease = max(0, b_total - c_total)
+        score = score_error(decrease, TOL["button_glyph_decrease"],
+                            ZERO_AT["button_glyph_decrease"])
+        ok = decrease <= TOL["button_glyph_decrease"]
+        fails = []
+        if not ok:
+            fails.append(f"dpad/face_buttons small-face count dropped "
+                         f"{b_total} -> {c_total} (missing glyph detail)")
+        return {"status": PASS if ok else FAIL, "score": score,
+                "failures": fails,
+                "detail": {"baseline_total": b_total,
+                          "candidate_total": c_total,
+                          "decrease": decrease},
+                "evidence": "small engraved faces (symbol cutouts) on "
+                            "dpad/face_buttons bodies; only decreases vs "
+                            "baseline are penalised"}
 
     # -- c5 ------------------------------------------------------------
     def c5_unrequested(self):
@@ -992,6 +1098,7 @@ class Grader:
         report["criteria"]["clusters at mirrored positions"] = self.c2_spacing()
         report["criteria"]["no new control interference"] = self.c3_interference()
         report["criteria"]["left-handed layout achieved"] = self.c4_handedness()
+        report["criteria"]["glyph presence"] = self.c6_glyphs()
         report["criteria"]["no unrequested changes"] = self.c5_unrequested()
         st = [v["status"] for v in report["criteria"].values()]
         report["overall"] = FAIL if FAIL in st else PASS
@@ -1087,8 +1194,14 @@ class PS3Harness(Harness):
             # candidate slightly off loses a little credit rather than all
             # of it; falls back to the PASS/FAIL status only for the rare
             # branch (health-gate failure) that has no "score" field yet.
-            if "score" in crit:
+            if "score" in crit and crit["score"] is not None:
                 score = crit["score"]
+            elif crit.get("status") == UNVERIFIABLE:
+                # can't verify this criterion for this candidate (e.g. a
+                # role-detection gap unrelated to what's being checked) --
+                # benefit of the doubt, not a penalty for a different,
+                # unproven problem
+                score = 1.0
             else:
                 score = 1.0 if crit.get("status") == PASS else 0.0
             registry[cname] = (cname, score, crit.get("status", ""))

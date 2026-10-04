@@ -28,3 +28,5 @@ Desktop.ini
 '@ | Out-File -Encoding utf8 .gitignore
 # Wyj¹tek: chcemy mieæ solutionTG w repo
 !1_paystation_controller/solution/solutionTG.SLDPRT
+
+!1_paystation_controller/solution/solutionTG_old.SLDPRT
